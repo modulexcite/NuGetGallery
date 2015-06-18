@@ -65,6 +65,33 @@ namespace NuGetGallery
             return result.Data.InterceptWith(new DisregardODataInterceptor());
         }
 
+        public static async Task<IQueryable<Package>> FindByIdCore(
+                   ISearchService searchService,
+                   HttpRequestBase request,
+                   IQueryable<Package> packages,
+                   string id,
+                   CuratedFeed curatedFeed)
+        {
+            SearchFilter searchFilter;
+            // We can only use Lucene if:
+            //  a) We are looking for the latest version of a package OR the Index contains all versions of each package
+            //  b) The sort order is something Lucene can handle
+            if (TryReadSearchFilter(searchService.ContainsAllVersions, request.RawUrl, out searchFilter))
+            {
+                searchFilter.SearchTerm = string.Format("Id:\"{0}\"", id);
+                searchFilter.IncludePrerelease = true;
+                searchFilter.CuratedFeed = curatedFeed;
+                searchFilter.SupportedFramework = null;
+                searchFilter.IncludeAllVersions = true;
+
+                var results = await GetResultsFromSearchService(searchService, searchFilter);
+
+                return results;
+            }
+
+            return packages;
+        }
+
         public static async Task<IQueryable<Package>> SearchCore(
             ISearchService searchService,
             HttpRequestBase request,
@@ -72,8 +99,7 @@ namespace NuGetGallery
             string searchTerm, 
             string targetFramework, 
             bool includePrerelease,
-            CuratedFeed curatedFeed,
-            bool includeAllVersions = false)
+            CuratedFeed curatedFeed)
         {
             SearchFilter searchFilter;
             // We can only use Lucene if:
@@ -85,7 +111,6 @@ namespace NuGetGallery
                 searchFilter.IncludePrerelease = includePrerelease;
                 searchFilter.CuratedFeed = curatedFeed;
                 searchFilter.SupportedFramework = targetFramework;
-                searchFilter.IncludeAllVersions = includeAllVersions;
 
                 var results = await GetResultsFromSearchService(searchService, searchFilter);
 
