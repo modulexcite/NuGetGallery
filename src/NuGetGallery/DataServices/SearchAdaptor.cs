@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Services.Providers;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -78,7 +79,7 @@ namespace NuGetGallery
             //  b) The sort order is something Lucene can handle
             if (TryReadSearchFilter(searchService.ContainsAllVersions, request.RawUrl, out searchFilter))
             {
-                searchFilter.SearchTerm = string.Format("Id:\"{0}\"", id);
+                searchFilter.SearchTerm = string.Format(CultureInfo.CurrentCulture, "Id:\"{0}\"", id);
                 searchFilter.IncludePrerelease = true;
                 searchFilter.CuratedFeed = curatedFeed;
                 searchFilter.SupportedFramework = null;
