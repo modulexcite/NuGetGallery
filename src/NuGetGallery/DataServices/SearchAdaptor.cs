@@ -72,7 +72,8 @@ namespace NuGetGallery
             string searchTerm, 
             string targetFramework, 
             bool includePrerelease,
-            CuratedFeed curatedFeed)
+            CuratedFeed curatedFeed,
+            bool includeAllVersions = false)
         {
             SearchFilter searchFilter;
             // We can only use Lucene if:
@@ -84,6 +85,7 @@ namespace NuGetGallery
                 searchFilter.IncludePrerelease = includePrerelease;
                 searchFilter.CuratedFeed = curatedFeed;
                 searchFilter.SupportedFramework = targetFramework;
+                searchFilter.IncludeAllVersions = includeAllVersions;
 
                 var results = await GetResultsFromSearchService(searchService, searchFilter);
 
